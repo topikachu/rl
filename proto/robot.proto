@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package robot;
+import "google/protobuf/empty.proto";
+
+service RobotService {
+  rpc SendState (GameState) returns (Actions);
+  rpc EndRound (RoundResult) returns (google.protobuf.Empty) {}
+}
+
+
+message GameState {
+  RobotState robotState = 1;
+  EnemyState enemyState = 2;
+}
+
+message RobotState {
+  // Robot Position & Movement
+  double x = 1;
+  double y = 2;
+  double velocity = 3;
+  double heading = 4;           // Radians
+
+  // Gun & Radar
+  double gunHeading = 5;        // Radians
+  double radarHeading = 6;      // Radians
+  double gunHeat = 7;
+  double gunTurnRemaining = 8;  // Radians
+  double radarTurnRemaining = 9; // Radians
+
+  // Game State
+  double energy = 10;
+  double battleFieldWidth = 11;
+  double battleFieldHeight = 12;
+  int32 roundNum = 13;
+  int64 time = 14;
+  int32 nearWall = 15; // Binary flag (0: no, 1: yes)
+  double gunBearing = 16;  // Bearing from gun to enemy
+}
+
+message EnemyState {
+  // Enemy Position & Movement
+  double x = 1;
+  double y = 2;
+  double velocity = 3;
+  double heading = 4;       // Radians
+  double bearing = 5;       // Radians
+  double distance = 6;
+
+  // Enemy Stats
+  double energy = 7;
+
+  int64 time = 8; // Timestamp of last observation
+}
+
+
+
+message Action {
+  enum ActionType {
+    MOVE_FORWARD = 0;
+    MOVE_BACKWARD = 1;
+    TURN_LEFT = 2;
+    TURN_RIGHT = 3;
+    TURN_GUN_LEFT = 4;
+    TURN_GUN_RIGHT = 5;
+    FIRE = 6;
+    ROTATE_RADAR_LEFT = 7;
+    ROTATE_RADAR_RIGHT = 8;
+    DO_NOTHING = 9;
+  }
+  ActionType action_type = 1;
+  double value = 2;
+}
+
+message Actions {
+  repeated Action actions = 1;
+}
+message RoundResult {
+  enum Result {
+    ROUND_END = 0;
+    WIN = 1;
+    LOSS = 2;
+  }
+  Result result = 1;
+}
