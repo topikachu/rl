@@ -420,3 +420,10 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+/train-logs/Reward_Components_aim/events.out.tfevents.1743720848.CNgongy04.28424.4
+/train-logs/Reward_Components_damage_dealt/events.out.tfevents.1743720848.CNgongy04.28424.1
+/train-logs/Reward_Components_damage_taken/events.out.tfevents.1743720848.CNgongy04.28424.2
+/train-logs/Reward_Components_fire_penalty/events.out.tfevents.1743720848.CNgongy04.28424.5
+/train-logs/Reward_Components_gun_turn/events.out.tfevents.1743720848.CNgongy04.28424.3
+/train-logs/Reward_Components_step_penalty/events.out.tfevents.1743720848.CNgongy04.28424.6
+/train-logs/events.out.tfevents.1743720837.CNgongy04.28424.0

@@ -24,17 +24,19 @@ class DQN(nn.Module):
         return self.fc3(x)
 
 class DQNAgent:
-    def __init__(self, state_size, action_size, env, model_path="dqn_model.pth", save_interval=50):
+    def __init__(self, state_size, action_size, env, writer, model_path="dqn_model.pth", save_interval=1000):
         self.env = env
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=1000)
+        self.memory = deque(maxlen=50000)
         self.gamma = 0.9  # Discount rate
         self.epsilon = 1.0  # Exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon_decay =  0.9995
         self.learning_rate = 0.001
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.writer = writer
+        self.train_step = 0
 
         self.model = DQN(state_size, action_size).to(self.device)
         self.target_model = DQN(state_size, action_size).to(self.device)
@@ -91,8 +93,12 @@ class DQNAgent:
     
         self.optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
         self.optimizer.step()
-    
+
+        self.writer.add_scalar('Loss/Train', loss.item(), self.train_step)
+        self.train_step += 1
+
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
         
@@ -101,7 +107,6 @@ class DQNAgent:
         
         if self.episodes % self.save_interval == 0:
             self.save()
-
     def update_target_model(self):
         self.target_model.load_state_dict(self.model.state_dict())
         logger.info("Target model updated")
