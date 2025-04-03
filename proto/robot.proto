@@ -6,6 +6,8 @@ import "google/protobuf/empty.proto";
 service RobotService {
   rpc SendState (GameState) returns (Actions);
   rpc EndRound (RoundResult) returns (google.protobuf.Empty) {}
+  rpc StartRound (google.protobuf.Empty) returns (google.protobuf.Empty) {}
+
 }
 
 

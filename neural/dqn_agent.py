@@ -5,6 +5,9 @@ import random
 import numpy as np
 from collections import deque
 import os
+from logger_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class DQN(nn.Module):
@@ -13,6 +16,7 @@ class DQN(nn.Module):
         self.fc1 = nn.Linear(state_size, 32)
         self.fc2 = nn.Linear(32, 32)
         self.fc3 = nn.Linear(32, action_size)
+        logger.debug(f"DQN model initialized with state_size: {state_size}, action_size: {action_size}")
 
     def forward(self, x):
         x = torch.relu(self.fc1(x))
@@ -37,30 +41,36 @@ class DQNAgent:
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
         self.criterion = nn.MSELoss()
 
-        self.model_path = model_path  # File path for saving/loading
-        self.save_interval = save_interval  # Save every N episodes
-        self.episodes = 0  # Track number of episodes
+        self.model_path = model_path
+        self.save_interval = save_interval
+        self.episodes = 0
 
-        # Load the model if it exists
         self.load()
+        logger.info(f"DQNAgent initialized. Device: {self.device}, Model path: {self.model_path}")
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
+        logger.debug(f"Memory updated. Current size: {len(self.memory)}")
 
     def act(self, game_state):
         if np.random.rand() <= self.epsilon:
-            return random.randrange(self.action_size)
+            action = random.randrange(self.action_size)
+            logger.debug(f"Random action chosen: {action}. Epsilon: {self.epsilon}")
+            return action
 
-        state = self.env.process_observation(game_state)
+        state = self.env.process_observation(game_state).to(self.device)
         with torch.no_grad():
             act_values = self.model(state)
-        return torch.argmax(act_values).item()
+        action = torch.argmax(act_values).item()
+        logger.debug(f"Model-based action chosen: {action}. Epsilon: {self.epsilon}")
+        return action
 
     def replay(self, batch_size):
         if len(self.memory) < batch_size:
+            logger.debug(f"Skipping replay. Memory size ({len(self.memory)}) < batch size ({batch_size})")
             return
+
         minibatch = random.sample(self.memory, batch_size)
-        
         states, actions, rewards, next_states, dones = zip(*minibatch)
         
         states = self.env.process_observation_batch(states).to(self.device)
@@ -69,42 +79,41 @@ class DQNAgent:
         rewards = torch.tensor(rewards, dtype=torch.float32).to(self.device)
         dones = torch.tensor(dones, dtype=torch.float32).to(self.device)
     
-        # Compute Q values for current states
         q_values = self.model(states)
         current_q_values = q_values.gather(1, actions.unsqueeze(1)).squeeze(1)
     
-        # Compute Q values for next states
         with torch.no_grad():
             next_q_values = self.target_model(next_states).max(1)[0]
     
-        # Compute target Q values
         target_q_values = rewards + (1 - dones) * self.gamma * next_q_values
     
-        # Compute loss
         loss = self.criterion(current_q_values, target_q_values)
     
-        # Optimize the model
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
     
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+        
         self.episodes += 1
+        logger.debug(f"Replay performed. Loss: {loss.item()}, Epsilon: {self.epsilon}")
+        
         if self.episodes % self.save_interval == 0:
             self.save()
 
     def update_target_model(self):
         self.target_model.load_state_dict(self.model.state_dict())
+        logger.info("Target model updated")
 
     def load(self):
-        """Load the model if the file exists."""
         if os.path.exists(self.model_path):
             self.model.load_state_dict(torch.load(self.model_path))
             self.update_target_model()
-            print(f"Model loaded from {self.model_path}")
+            logger.info(f"Model loaded from {self.model_path}")
+        else:
+            logger.info(f"No existing model found at {self.model_path}. Starting with a new model.")
 
     def save(self):
-        """Save the model to a file."""
         torch.save(self.model.state_dict(), self.model_path)
-        print(f"Model saved to {self.model_path}")
+        logger.info(f"Model saved to {self.model_path}")
