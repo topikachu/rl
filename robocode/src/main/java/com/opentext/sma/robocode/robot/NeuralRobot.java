@@ -18,7 +18,7 @@ public class NeuralRobot extends AdvancedRobot {
     static final Empty EMPTY = Empty.newBuilder().build();
     private static final double WALL_THRESHOLD = 50;
     private static final String PYTHON_SERVER_HOST = "localhost";
-    private static final int PYTHON_SERVER_PORT = 5000;
+    private static final int PYTHON_SERVER_PORT = 5001;
 
     private RobotServiceGrpc.RobotServiceBlockingStub blockingStub;
     private ManagedChannel channel;
@@ -81,17 +81,13 @@ public class NeuralRobot extends AdvancedRobot {
     }
 
     private Robot.RobotState buildRobotState(ScannedRobotEvent e) {
-        RobotMapper mapper = RobotMapper.INSTANCE;
-        Robot.RobotState robotState = mapper.robotToState(this);
+	    Robot.RobotState robotState = RobotMapper.INSTANCE.robotToState(this);
 
         int nearWall = isNearWall() ? 1 : 0;
-        double bearingFromGun = calculateBearingFromGun(e);
-
-        log.debug("Near wall: {}, Bearing from gun: {}", nearWall, bearingFromGun);
+        log.debug("Near wall: {}", nearWall);
 
         return robotState.toBuilder()
                 .setNearWall(nearWall)
-                .setGunBearing(bearingFromGun)
                 .build();
     }
 
@@ -110,12 +106,7 @@ public class NeuralRobot extends AdvancedRobot {
         return near;
     }
 
-    private double calculateBearingFromGun(ScannedRobotEvent e) {
-        double absoluteBearing = getHeading() + e.getBearing();
-        double bearingFromGun = Utils.normalRelativeAngleDegrees(absoluteBearing - getGunHeading());
-        log.debug("Absolute bearing: {}, Bearing from gun: {}", absoluteBearing, bearingFromGun);
-        return bearingFromGun;
-    }
+
 
     private void performActions(Robot.Actions actions) {
         log.debug("Performing {} actions", actions.getActionsCount());

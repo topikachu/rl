@@ -37,7 +37,6 @@ message RobotState {
   int32 roundNum = 13;
   int64 time = 14;
   int32 nearWall = 15; // Binary flag (0: no, 1: yes)
-  double gunBearing = 16;  // Bearing from gun to enemy
 }
 
 message EnemyState {

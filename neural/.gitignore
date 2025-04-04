@@ -427,3 +427,4 @@ cython_debug/
 /train-logs/Reward_Components_gun_turn/events.out.tfevents.1743720848.CNgongy04.28424.3
 /train-logs/Reward_Components_step_penalty/events.out.tfevents.1743720848.CNgongy04.28424.6
 /train-logs/events.out.tfevents.1743720837.CNgongy04.28424.0
+/train-logs/

@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0brobot.proto\x12\x05robot\x1a\x1bgoogle/protobuf/empty.proto\"Y\n\tGameState\x12%\n\nrobotState\x18\x01 \x01(\x0b\x32\x11.robot.RobotState\x12%\n\nenemyState\x18\x02 \x01(\x0b\x32\x11.robot.EnemyState\"\xc1\x02\n\nRobotState\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\x10\n\x08velocity\x18\x03 \x01(\x01\x12\x0f\n\x07heading\x18\x04 \x01(\x01\x12\x12\n\ngunHeading\x18\x05 \x01(\x01\x12\x14\n\x0cradarHeading\x18\x06 \x01(\x01\x12\x0f\n\x07gunHeat\x18\x07 \x01(\x01\x12\x18\n\x10gunTurnRemaining\x18\x08 \x01(\x01\x12\x1a\n\x12radarTurnRemaining\x18\t \x01(\x01\x12\x0e\n\x06\x65nergy\x18\n \x01(\x01\x12\x18\n\x10\x62\x61ttleFieldWidth\x18\x0b \x01(\x01\x12\x19\n\x11\x62\x61ttleFieldHeight\x18\x0c \x01(\x01\x12\x10\n\x08roundNum\x18\r \x01(\x05\x12\x0c\n\x04time\x18\x0e \x01(\x03\x12\x10\n\x08nearWall\x18\x0f \x01(\x05\x12\x12\n\ngunBearing\x18\x10 \x01(\x01\"\x86\x01\n\nEnemyState\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\x10\n\x08velocity\x18\x03 \x01(\x01\x12\x0f\n\x07heading\x18\x04 \x01(\x01\x12\x0f\n\x07\x62\x65\x61ring\x18\x05 \x01(\x01\x12\x10\n\x08\x64istance\x18\x06 \x01(\x01\x12\x0e\n\x06\x65nergy\x18\x07 \x01(\x01\x12\x0c\n\x04time\x18\x08 \x01(\x03\"\x89\x02\n\x06\x41\x63tion\x12-\n\x0b\x61\x63tion_type\x18\x01 \x01(\x0e\x32\x18.robot.Action.ActionType\x12\r\n\x05value\x18\x02 \x01(\x01\"\xc0\x01\n\nActionType\x12\x10\n\x0cMOVE_FORWARD\x10\x00\x12\x11\n\rMOVE_BACKWARD\x10\x01\x12\r\n\tTURN_LEFT\x10\x02\x12\x0e\n\nTURN_RIGHT\x10\x03\x12\x11\n\rTURN_GUN_LEFT\x10\x04\x12\x12\n\x0eTURN_GUN_RIGHT\x10\x05\x12\x08\n\x04\x46IRE\x10\x06\x12\x15\n\x11ROTATE_RADAR_LEFT\x10\x07\x12\x16\n\x12ROTATE_RADAR_RIGHT\x10\x08\x12\x0e\n\nDO_NOTHING\x10\t\")\n\x07\x41\x63tions\x12\x1e\n\x07\x61\x63tions\x18\x01 \x03(\x0b\x32\r.robot.Action\"d\n\x0bRoundResult\x12)\n\x06result\x18\x01 \x01(\x0e\x32\x19.robot.RoundResult.Result\"*\n\x06Result\x12\r\n\tROUND_END\x10\x00\x12\x07\n\x03WIN\x10\x01\x12\x08\n\x04LOSS\x10\x02\x32\xb7\x01\n\x0cRobotService\x12-\n\tSendState\x12\x10.robot.GameState\x1a\x0e.robot.Actions\x12\x38\n\x08\x45ndRound\x12\x12.robot.RoundResult\x1a\x16.google.protobuf.Empty\"\x00\x12>\n\nStartRound\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0brobot.proto\x12\x05robot\x1a\x1bgoogle/protobuf/empty.proto\"Y\n\tGameState\x12%\n\nrobotState\x18\x01 \x01(\x0b\x32\x11.robot.RobotState\x12%\n\nenemyState\x18\x02 \x01(\x0b\x32\x11.robot.EnemyState\"\xad\x02\n\nRobotState\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\x10\n\x08velocity\x18\x03 \x01(\x01\x12\x0f\n\x07heading\x18\x04 \x01(\x01\x12\x12\n\ngunHeading\x18\x05 \x01(\x01\x12\x14\n\x0cradarHeading\x18\x06 \x01(\x01\x12\x0f\n\x07gunHeat\x18\x07 \x01(\x01\x12\x18\n\x10gunTurnRemaining\x18\x08 \x01(\x01\x12\x1a\n\x12radarTurnRemaining\x18\t \x01(\x01\x12\x0e\n\x06\x65nergy\x18\n \x01(\x01\x12\x18\n\x10\x62\x61ttleFieldWidth\x18\x0b \x01(\x01\x12\x19\n\x11\x62\x61ttleFieldHeight\x18\x0c \x01(\x01\x12\x10\n\x08roundNum\x18\r \x01(\x05\x12\x0c\n\x04time\x18\x0e \x01(\x03\x12\x10\n\x08nearWall\x18\x0f \x01(\x05\"\x86\x01\n\nEnemyState\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\x10\n\x08velocity\x18\x03 \x01(\x01\x12\x0f\n\x07heading\x18\x04 \x01(\x01\x12\x0f\n\x07\x62\x65\x61ring\x18\x05 \x01(\x01\x12\x10\n\x08\x64istance\x18\x06 \x01(\x01\x12\x0e\n\x06\x65nergy\x18\x07 \x01(\x01\x12\x0c\n\x04time\x18\x08 \x01(\x03\"\x89\x02\n\x06\x41\x63tion\x12-\n\x0b\x61\x63tion_type\x18\x01 \x01(\x0e\x32\x18.robot.Action.ActionType\x12\r\n\x05value\x18\x02 \x01(\x01\"\xc0\x01\n\nActionType\x12\x10\n\x0cMOVE_FORWARD\x10\x00\x12\x11\n\rMOVE_BACKWARD\x10\x01\x12\r\n\tTURN_LEFT\x10\x02\x12\x0e\n\nTURN_RIGHT\x10\x03\x12\x11\n\rTURN_GUN_LEFT\x10\x04\x12\x12\n\x0eTURN_GUN_RIGHT\x10\x05\x12\x08\n\x04\x46IRE\x10\x06\x12\x15\n\x11ROTATE_RADAR_LEFT\x10\x07\x12\x16\n\x12ROTATE_RADAR_RIGHT\x10\x08\x12\x0e\n\nDO_NOTHING\x10\t\")\n\x07\x41\x63tions\x12\x1e\n\x07\x61\x63tions\x18\x01 \x03(\x0b\x32\r.robot.Action\"d\n\x0bRoundResult\x12)\n\x06result\x18\x01 \x01(\x0e\x32\x19.robot.RoundResult.Result\"*\n\x06Result\x12\r\n\tROUND_END\x10\x00\x12\x07\n\x03WIN\x10\x01\x12\x08\n\x04LOSS\x10\x02\x32\xb7\x01\n\x0cRobotService\x12-\n\tSendState\x12\x10.robot.GameState\x1a\x0e.robot.Actions\x12\x38\n\x08\x45ndRound\x12\x12.robot.RoundResult\x1a\x16.google.protobuf.Empty\"\x00\x12>\n\nStartRound\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,19 +35,19 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GAMESTATE']._serialized_start=51
   _globals['_GAMESTATE']._serialized_end=140
   _globals['_ROBOTSTATE']._serialized_start=143
-  _globals['_ROBOTSTATE']._serialized_end=464
-  _globals['_ENEMYSTATE']._serialized_start=467
-  _globals['_ENEMYSTATE']._serialized_end=601
-  _globals['_ACTION']._serialized_start=604
-  _globals['_ACTION']._serialized_end=869
-  _globals['_ACTION_ACTIONTYPE']._serialized_start=677
-  _globals['_ACTION_ACTIONTYPE']._serialized_end=869
-  _globals['_ACTIONS']._serialized_start=871
-  _globals['_ACTIONS']._serialized_end=912
-  _globals['_ROUNDRESULT']._serialized_start=914
-  _globals['_ROUNDRESULT']._serialized_end=1014
-  _globals['_ROUNDRESULT_RESULT']._serialized_start=972
-  _globals['_ROUNDRESULT_RESULT']._serialized_end=1014
-  _globals['_ROBOTSERVICE']._serialized_start=1017
-  _globals['_ROBOTSERVICE']._serialized_end=1200
+  _globals['_ROBOTSTATE']._serialized_end=444
+  _globals['_ENEMYSTATE']._serialized_start=447
+  _globals['_ENEMYSTATE']._serialized_end=581
+  _globals['_ACTION']._serialized_start=584
+  _globals['_ACTION']._serialized_end=849
+  _globals['_ACTION_ACTIONTYPE']._serialized_start=657
+  _globals['_ACTION_ACTIONTYPE']._serialized_end=849
+  _globals['_ACTIONS']._serialized_start=851
+  _globals['_ACTIONS']._serialized_end=892
+  _globals['_ROUNDRESULT']._serialized_start=894
+  _globals['_ROUNDRESULT']._serialized_end=994
+  _globals['_ROUNDRESULT_RESULT']._serialized_start=952
+  _globals['_ROUNDRESULT_RESULT']._serialized_end=994
+  _globals['_ROBOTSERVICE']._serialized_start=997
+  _globals['_ROBOTSERVICE']._serialized_end=1180
 # @@protoc_insertion_point(module_scope)

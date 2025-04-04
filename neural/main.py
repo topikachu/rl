@@ -18,7 +18,7 @@ class RobotServiceServicer(robot_pb2_grpc.RobotServiceServicer):
     def __init__(self):
         self.writer = SummaryWriter('train-logs')
         self.env = RobocodeEnv(writer= self.writer)
-        self.agent = DQNAgent(state_size=6, action_size=4, env=self.env, writer=self.writer)
+        self.agent = DQNAgent(state_size=8, action_size=4, env=self.env, writer=self.writer)
         self.previous_state = None
         self.previous_action = None
         self.episode_reward = 0
@@ -87,7 +87,7 @@ class RobotServiceServicer(robot_pb2_grpc.RobotServiceServicer):
 
         self.writer.add_scalar('Reward/Episode', self.episode_reward, self.episodes)
         self.writer.add_scalar('Steps/Episode', self.episode_step, self.episodes)
-    
+
         if request.result == robot_pb2.RoundResult.WIN:
             self.writer.add_scalar('WinRate', 1, self.episodes)
         else:
@@ -122,8 +122,8 @@ def serve():
     servicer = RobotServiceServicer()
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     robot_pb2_grpc.add_RobotServiceServicer_to_server(servicer, server)
-    server.add_insecure_port('[::]:5000')
-    logger.info("Server started on port 5000")
+    server.add_insecure_port('[::]:5001')
+    logger.info("Server started on port 5001")
     server.start()
     try:
         server.wait_for_termination()

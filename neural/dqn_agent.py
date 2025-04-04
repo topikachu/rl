@@ -34,7 +34,14 @@ class DQNAgent:
         self.epsilon_min = 0.01
         self.epsilon_decay =  0.9995
         self.learning_rate = 0.001
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # Updated device selection logic
+        if torch.cuda.is_available():
+            self.device = torch.device("cuda")
+        elif torch.mps.is_available():
+            self.device = torch.device("mps")
+        else:
+            self.device = torch.device("cpu")
+
         self.writer = writer
         self.train_step = 0
 
@@ -74,23 +81,23 @@ class DQNAgent:
 
         minibatch = random.sample(self.memory, batch_size)
         states, actions, rewards, next_states, dones = zip(*minibatch)
-        
+
         states = self.env.process_observation_batch(states).to(self.device)
         next_states = self.env.process_observation_batch(next_states).to(self.device)
         actions = torch.tensor(actions, dtype=torch.long).to(self.device)
         rewards = torch.tensor(rewards, dtype=torch.float32).to(self.device)
         dones = torch.tensor(dones, dtype=torch.float32).to(self.device)
-    
+
         q_values = self.model(states)
         current_q_values = q_values.gather(1, actions.unsqueeze(1)).squeeze(1)
-    
+
         with torch.no_grad():
             next_q_values = self.target_model(next_states).max(1)[0]
-    
+
         target_q_values = rewards + (1 - dones) * self.gamma * next_q_values
-    
+
         loss = self.criterion(current_q_values, target_q_values)
-    
+
         self.optimizer.zero_grad()
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
@@ -101,10 +108,10 @@ class DQNAgent:
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
-        
+
         self.episodes += 1
         logger.debug(f"Replay performed. Loss: {loss.item()}, Epsilon: {self.epsilon}")
-        
+
         if self.episodes % self.save_interval == 0:
             self.save()
     def update_target_model(self):

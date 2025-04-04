@@ -4,7 +4,10 @@ import com.opentext.sma.robocode.robot.NeuralRobot;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.robocode.battle.IBattleManager;
 import net.sf.robocode.battle.IBattleManagerBase;
+import net.sf.robocode.core.Container;
 import net.sf.robocode.core.ContainerBase;
+import net.sf.robocode.core.RobocodeMainBase;
+import net.sf.robocode.settings.ISettingsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import robocode.control.BattleSpecification;
@@ -27,16 +30,19 @@ public class BattleRunner {
 
         // Create the RobocodeEngine
         //   RobocodeEngine engine = new RobocodeEngine(); // Run from current working directory
-        RobocodeEngine engine = new RobocodeEngine(new File("C:\\git\\neural-robo\\robocode")); // Run from C:/Robocode
+        RobocodeEngine engine = new RobocodeEngine(new File(".")); // Run from C:/Robocode
 
+        // Add our own container to the RobocodeEngine
 
         // Add our own battle listener to the RobocodeEngine
         engine.addBattleListener(new BattleObserver());
-
-        boolean visible=Boolean.parseBoolean(System.getProperty("visible","false"));
+//        ISettingsManager settingsManager = Container.getComponent(ISettingsManager.class);
+//        settingsManager.setOptionsDevelopmentPaths();
+        boolean visible=Boolean.parseBoolean(System.getProperty("VISIBLE","false"));
 
         // Show the Robocode battle view
         engine.setVisible(visible);
+
 
         // Setup the battle specification
 
