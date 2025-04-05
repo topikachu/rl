@@ -5,8 +5,18 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
-import robocode.*;
-import robocode.util.Utils;
+import robocode.AdvancedRobot;
+import robocode.BulletHitBulletEvent;
+import robocode.BulletHitEvent;
+import robocode.BulletMissedEvent;
+import robocode.DeathEvent;
+import robocode.HitByBulletEvent;
+import robocode.HitRobotEvent;
+import robocode.HitWallEvent;
+import robocode.RobotDeathEvent;
+import robocode.ScannedRobotEvent;
+import robocode.SkippedTurnEvent;
+import robocode.WinEvent;
 import robot.Robot;
 import robot.RobotServiceGrpc;
 
@@ -19,12 +29,14 @@ public class NeuralRobot extends AdvancedRobot {
     private static final double WALL_THRESHOLD = 50;
     private static final String PYTHON_SERVER_HOST = "localhost";
     private static final int PYTHON_SERVER_PORT = 5001;
+    public static final RobotMapper ROBOT_MAPPER = RobotMapper.INSTANCE;
+    private static final long UPDATE_INTERVAL_TURNS = 100; // turns
 
     private RobotServiceGrpc.RobotServiceBlockingStub blockingStub;
     private ManagedChannel channel;
-    private Robot.RoundResult.Result roundResult;
 
     private int skippedTurns = 0;
+    private long lastUpdateTime = 0;
 
     @Override
     public void run() {
@@ -37,6 +49,13 @@ public class NeuralRobot extends AdvancedRobot {
 
         while (true) {
             setTurnRadarRight(360);
+
+            // Check if it's time to send an update
+            long currentTime = getTime();
+            if (currentTime - lastUpdateTime >= UPDATE_INTERVAL_TURNS) {
+                sendStateToPythonAndPerformAction(null);
+            }
+
             execute();
         }
     }
@@ -58,53 +77,19 @@ public class NeuralRobot extends AdvancedRobot {
         log.debug("Initializing robot settings");
         setAdjustRadarForGunTurn(true);
         setAdjustGunForRobotTurn(true);
-        roundResult = Robot.RoundResult.Result.ROUND_END;
-        endRound(Robot.RoundResult.Result.ROUND_END);
+        endRound(Robot.RoundResult.Reason.UNKNOWN);
         log.debug("Robot initialization complete");
     }
 
     @Override
-    public void onScannedRobot(ScannedRobotEvent e) {
-        log.debug("Robot scanned");
-        Robot.RobotState robotState = buildRobotState(e);
-        Robot.EnemyState enemyState = RobotMapper.INSTANCE.enemyToState(e);
+    public void onScannedRobot(ScannedRobotEvent event) {
 
+        log.debug("Sending state to Python server at onScannedRobot");
+        sendStateToPythonAndPerformAction(event);
 
-        try {
-            log.debug("Sending state to Python server at onScannedRobot");
-            Robot.Actions actions = sendStateToPython(robotState, enemyState);
-            log.debug("Received actions from Python server: {} at onScannedRobot", actions);
-            performActions(actions);
-        } catch (Exception ex) {
-            log.error("Error sending state to Python: {}", ex.getMessage(), ex);
-        }
     }
 
-    private Robot.RobotState buildRobotState(ScannedRobotEvent e) {
-	    Robot.RobotState robotState = RobotMapper.INSTANCE.robotToState(this);
 
-        int nearWall = isNearWall() ? 1 : 0;
-        log.debug("Near wall: {}", nearWall);
-
-        return robotState.toBuilder()
-                .setNearWall(nearWall)
-                .build();
-    }
-
-    private boolean isNearWall() {
-        double distLeftWall = getX();
-        double distRightWall = getBattleFieldWidth() - getX();
-        double distTopWall = getBattleFieldHeight() - getY();
-        double distBottomWall = getY();
-
-        boolean near = distLeftWall < WALL_THRESHOLD || distRightWall < WALL_THRESHOLD ||
-                distTopWall < WALL_THRESHOLD || distBottomWall < WALL_THRESHOLD;
-
-        log.debug("Wall distances - Left: {}, Right: {}, Top: {}, Bottom: {}",
-                distLeftWall, distRightWall, distTopWall, distBottomWall);
-
-        return near;
-    }
 
 
 
@@ -135,15 +120,50 @@ public class NeuralRobot extends AdvancedRobot {
     }
 
     @Override
+    public void onBulletHit(BulletHitEvent event) {
+        Robot.Event rpcEvent = Robot.Event.newBuilder().setBulletHit(ROBOT_MAPPER.bulletHitToProto(event)).build();
+        sendEventToPython(rpcEvent);
+    }
+
+    @Override
+    public void onBulletHitBullet(BulletHitBulletEvent event) {
+        Robot.Event rpcEvent = Robot.Event.newBuilder().setBulletHitBullet(ROBOT_MAPPER.bulletHitBulletToProto(event)).build();
+        sendEventToPython(rpcEvent);
+    }
+
+    @Override
+    public void onBulletMissed(BulletMissedEvent event) {
+        Robot.Event rpcEvent = Robot.Event.newBuilder().setBulletMissed(ROBOT_MAPPER.bulletMissedToProto(event)).build();
+        sendEventToPython(rpcEvent);
+    }
+
+    @Override
+    public void onHitByBullet(HitByBulletEvent event) {
+        Robot.Event rpcEvent = Robot.Event.newBuilder().setHitByBullet(ROBOT_MAPPER.hitByBulletToProto(event)).build();
+        sendEventToPython(rpcEvent);
+    }
+
+    @Override
+    public void onHitRobot(HitRobotEvent event) {
+        Robot.Event rpcEvent = Robot.Event.newBuilder().setHitRobot(ROBOT_MAPPER.hitRobotToProto(event)).build();
+        sendEventToPython(rpcEvent);
+    }
+
+    @Override
+    public void onHitWall(HitWallEvent event) {
+        Robot.Event rpcEvent = Robot.Event.newBuilder().setHitWall(ROBOT_MAPPER.hitWallToProto(event)).build();
+        sendEventToPython(rpcEvent);
+    }
+
+    @Override
     public void onWin(WinEvent event) {
-        log.info("Round won!");
-        this.roundResult = Robot.RoundResult.Result.WIN;
+        endRound(Robot.RoundResult.Reason.WIN);
     }
 
     @Override
     public void onDeath(DeathEvent event) {
+        endRound(Robot.RoundResult.Reason.LOSS);
         log.info("Round lost.");
-        this.roundResult = Robot.RoundResult.Result.LOSS;
     }
 
     @Override
@@ -152,30 +172,41 @@ public class NeuralRobot extends AdvancedRobot {
         log.info("Skipped turn: {}", skippedTurns);
     }
 
-    @Override
-    public void onRoundEnded(RoundEndedEvent event) {
-        log.info("Round ended. Result: {}", this.roundResult);
-        endRound(this.roundResult);
-        cleanupGrpcConnection();
-    }
 
 
-    private Robot.Actions sendStateToPython(Robot.RobotState robotState, Robot.EnemyState enemyState) {
-        Robot.GameState gameState = Robot.GameState.newBuilder()
-                .setRobotState(robotState)
-                .setEnemyState(enemyState)
-                .build();
-        Robot.Actions actions = blockingStub.sendState(gameState);
-        return actions;
-    }
-
-    private void endRound(Robot.RoundResult.Result result) {
+    private void sendEventToPython(Robot.Event event) {
         try {
-            log.debug("Ending round with result: {}", result);
-            Robot.RoundResult roundResult = Robot.RoundResult.newBuilder()
-                    .setResult(result)
-                    .build();
-            blockingStub.endRound(roundResult);
+            blockingStub.onEvent(event);
+            log.debug("Sent event to Python server: {}", event.getEventTypeCase());
+        } catch (StatusRuntimeException e) {
+            log.error("gRPC error when sending event to Python: {} - {}", e.getStatus(), e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error when sending event to Python: {}", e.getMessage(), e);
+        }
+    }
+
+
+    private void sendStateToPythonAndPerformAction(ScannedRobotEvent enemy) {
+        try {
+            lastUpdateTime = getTime();
+            Robot.Actions actions = blockingStub.sendState(ROBOT_MAPPER.gameStateToProto(this, enemy));
+            log.debug("Received actions from Python server: {}", actions);
+            performActions(actions);
+        } catch (StatusRuntimeException e) {
+            log.error("gRPC error when sending state to Python: {} - {}", e.getStatus(), e.getMessage());
+            // Optionally, you might want to attempt reconnecting to the gRPC server here
+            // initializeGrpcConnection();
+        } catch (Exception e) {
+            log.error("Unexpected error when sending state to Python: {}", e.getMessage(), e);
+        }
+    }
+
+    private void endRound(Robot.RoundResult.Reason reason) {
+        try {
+            log.debug("Ending round");
+            Robot.RoundResult result = Robot.RoundResult.newBuilder().setReason(reason).build(); // Add more fields as needed (e.g., score, rank, etc.)
+//                            .
+            blockingStub.endRound(result);
             log.debug("Round end signal sent to Python server");
         } catch (StatusRuntimeException e) {
             log.error("Error ending round: {}", e.getMessage(), e);
@@ -208,6 +239,13 @@ public class NeuralRobot extends AdvancedRobot {
             }
             log.debug("gRPC connection cleaned up");
         }
+    }
+
+
+    @Override
+    public void onRobotDeath(RobotDeathEvent event) {
+        Robot.Event rpcEvent = Robot.Event.newBuilder().setRobotDeath(ROBOT_MAPPER.robotDeathToProto(event)).build();
+        sendEventToPython(rpcEvent);
     }
 
 }

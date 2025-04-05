@@ -7,28 +7,31 @@ from collections import deque
 import os
 from logger_config import get_logger
 
+from typing import Deque, Tuple
+
+from robocode_env import  RobocodeGameState
 logger = get_logger(__name__)
 
 
 class DQN(nn.Module):
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size: int, action_size: int):
         super(DQN, self).__init__()
         self.fc1 = nn.Linear(state_size, 32)
         self.fc2 = nn.Linear(32, 32)
         self.fc3 = nn.Linear(32, action_size)
         logger.debug(f"DQN model initialized with state_size: {state_size}, action_size: {action_size}")
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         return self.fc3(x)
 
 class DQNAgent:
-    def __init__(self, state_size, action_size, env, writer, model_path="dqn_model.pth", save_interval=1000):
+    def __init__(self, state_size: int, action_size: int, env, writer, model_path: str = "dqn_model.pth", save_interval: int = 1000):
         self.env = env
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=50000)
+        self.memory: Deque[Tuple[RobocodeGameState, int, float, RobocodeGameState, bool]] = deque(maxlen=50000)
         self.gamma = 0.9  # Discount rate
         self.epsilon = 1.0  # Exploration rate
         self.epsilon_min = 0.01
@@ -57,11 +60,11 @@ class DQNAgent:
         self.load()
         logger.info(f"DQNAgent initialized. Device: {self.device}, Model path: {self.model_path}")
 
-    def remember(self, state, action, reward, next_state, done):
+    def remember(self, state: RobocodeGameState, action: int, reward: float, next_state: RobocodeGameState, done: bool) -> None:
         self.memory.append((state, action, reward, next_state, done))
         logger.debug(f"Memory updated. Current size: {len(self.memory)}")
 
-    def act(self, game_state):
+    def act(self, game_state: RobocodeGameState) -> int:
         if np.random.rand() <= self.epsilon:
             action = random.randrange(self.action_size)
             logger.debug(f"Random action chosen: {action}. Epsilon: {self.epsilon}")
@@ -74,7 +77,7 @@ class DQNAgent:
         logger.debug(f"Model-based action chosen: {action}. Epsilon: {self.epsilon}")
         return action
 
-    def replay(self, batch_size):
+    def replay(self, batch_size: int) -> None:
         if len(self.memory) < batch_size:
             logger.debug(f"Skipping replay. Memory size ({len(self.memory)}) < batch size ({batch_size})")
             return
@@ -114,11 +117,11 @@ class DQNAgent:
 
         if self.episodes % self.save_interval == 0:
             self.save()
-    def update_target_model(self):
+    def update_target_model(self) -> None:
         self.target_model.load_state_dict(self.model.state_dict())
         logger.info("Target model updated")
 
-    def load(self):
+    def load(self) -> None:
         if os.path.exists(self.model_path):
             self.model.load_state_dict(torch.load(self.model_path))
             self.update_target_model()
@@ -126,6 +129,6 @@ class DQNAgent:
         else:
             logger.info(f"No existing model found at {self.model_path}. Starting with a new model.")
 
-    def save(self):
+    def save(self) -> None:
         torch.save(self.model.state_dict(), self.model_path)
         logger.info(f"Model saved to {self.model_path}")

@@ -5,15 +5,91 @@ import "google/protobuf/empty.proto";
 
 service RobotService {
   rpc SendState (GameState) returns (Actions);
-  rpc EndRound (RoundResult) returns (google.protobuf.Empty) {}
-  rpc StartRound (google.protobuf.Empty) returns (google.protobuf.Empty) {}
+  rpc Act (GameState) returns (Actions);
 
+  rpc OnEvent (Event) returns (google.protobuf.Empty);
+  rpc EndRound (RoundResult) returns (google.protobuf.Empty);
+  rpc StartRound (google.protobuf.Empty) returns (google.protobuf.Empty);
 }
 
 
 message GameState {
   RobotState robotState = 1;
-  EnemyState enemyState = 2;
+  ScannedRobotEvent enemy = 2;
+}
+message RoundResult{
+  enum Reason{
+    UNKNOWN = 0;
+    WIN = 1;
+    LOSS = 2;
+  }
+  Reason reason = 1;
+}
+
+
+
+message Event {
+  oneof eventType {
+    BulletHitEvent bulletHit = 1;
+    BulletHitBulletEvent bulletHitBullet = 2;
+    BulletMissedEvent bulletMissed = 3;
+    HitByBulletEvent hitByBullet = 4;
+    HitRobotEvent hitRobot = 5;
+    HitWallEvent hitWall = 6;
+    RobotDeathEvent robotDeath = 7;
+  }
+}
+
+message BulletHitEvent {
+  string name = 1;
+  double energy = 2;
+  Bullet bullet = 3;
+}
+
+message BulletHitBulletEvent {
+  Bullet bullet = 1;
+  Bullet hitBullet = 2;
+}
+
+message BulletMissedEvent {
+  Bullet bullet = 1;
+}
+
+message HitByBulletEvent {
+  double bearing = 1;
+  Bullet bullet = 2;
+}
+
+message HitRobotEvent {
+  string robotName = 1;
+  double bearing = 2;
+  double energy = 3;
+  bool atFault = 4;
+}
+
+message HitWallEvent {
+  double bearing = 1;
+}
+
+
+
+
+
+
+message RobotDeathEvent {
+  string robotName = 1;
+}
+
+
+message Bullet {
+  double headingRadians = 1;
+  double x = 2;
+  double y = 3;
+  double power = 4;
+  string ownerName = 5;
+  string victimName = 6;
+  bool isActive = 7;
+  int32 bulletId = 8;
 }
 
 message RobotState {
@@ -36,10 +112,9 @@ message RobotState {
   double battleFieldHeight = 12;
   int32 roundNum = 13;
   int64 time = 14;
-  int32 nearWall = 15; // Binary flag (0: no, 1: yes)
 }
 
-message EnemyState {
+message ScannedRobotEvent {
   // Enemy Position & Movement
   double x = 1;
   double y = 2;
@@ -51,7 +126,7 @@ message EnemyState {
   // Enemy Stats
   double energy = 7;
 
-  int64 time = 8; // Timestamp of last observation
+  int64 time = 8; // turn number
 }
 
 
@@ -76,11 +151,4 @@ message Action {
 message Actions {
   repeated Action actions = 1;
 }
-message RoundResult {
-  enum Result {
-    ROUND_END = 0;
-    WIN = 1;
-    LOSS = 2;
-  }
-  Result result = 1;
-}
+

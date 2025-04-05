@@ -1,1 +1,4 @@
-python -m grpc_tools.protoc -I. --python_out=../neural --grpc_python_out=../neural robot.proto
+python -m grpc_tools.protoc -I. \
+    --python_betterproto_out=../neural \
+    robot.proto
+
