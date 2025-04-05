@@ -46,7 +46,7 @@ def get_reward_logger():
 
     # Create a console handler
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)  # Set to DEBUG to show in console
+    console_handler.setLevel(logging.INFO)  # Set to DEBUG to show in console
 
     # Create a formatter
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
