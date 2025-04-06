@@ -208,6 +208,7 @@ public class NeuralRobot extends AdvancedRobot {
 //                            .
             blockingStub.endRound(result);
             log.debug("Round end signal sent to Python server");
+            cleanupGrpcConnection();
         } catch (StatusRuntimeException e) {
             log.error("Error ending round: {}", e.getMessage(), e);
         }

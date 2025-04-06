@@ -6,9 +6,12 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import robocode.AdvancedRobot;
+import robocode.RoundEndedEvent;
 import robocode.ScannedRobotEvent;
 import robot.Robot;
 import robot.RobotServiceGrpc;
+
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public   class ActRobot extends AdvancedRobot {
@@ -127,9 +130,26 @@ public   class ActRobot extends AdvancedRobot {
         }
     }
 
+    @Override
+    public void onRoundEnded(RoundEndedEvent event) {
+        cleanupGrpcConnection();
+    }
 
-
-
+    private void cleanupGrpcConnection() {
+        if (channel != null && !channel.isShutdown()) {
+            try {
+                channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                log.error("Error shutting down gRPC channel: {}", e.getMessage(), e);
+                Thread.currentThread().interrupt();
+            } finally {
+                if (!channel.isShutdown()) {
+                    channel.shutdownNow();
+                }
+            }
+            log.debug("gRPC connection cleaned up");
+        }
+    }
 
 
 

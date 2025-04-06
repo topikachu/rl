@@ -42,77 +42,53 @@ class RobocodeEnv:
 
 
     class ActionType(Enum):
-            MOVE_FORWARD_SMALL = 0
-            MOVE_FORWARD_MEDIUM = 1
-            MOVE_FORWARD_LARGE = 2
-            MOVE_BACKWARD_SMALL = 3
-            MOVE_BACKWARD_MEDIUM = 4
-            MOVE_BACKWARD_LARGE = 5
-            TURN_LEFT_SMALL = 6
-            TURN_LEFT_MEDIUM = 7
-            TURN_LEFT_LARGE = 8
-            TURN_RIGHT_SMALL = 9
-            TURN_RIGHT_MEDIUM = 10
-            TURN_RIGHT_LARGE = 11
-            TURN_GUN_LEFT_SMALL = 12
-            TURN_GUN_LEFT_MEDIUM = 13
-            TURN_GUN_LEFT_LARGE = 14
-            TURN_GUN_RIGHT_SMALL = 15
-            TURN_GUN_RIGHT_MEDIUM = 16
-            TURN_GUN_RIGHT_LARGE = 17
-            FIRE_SMALL = 18
-            FIRE_MEDIUM = 19
-            FIRE_LARGE = 20
-            ROTATE_RADAR_LEFT_SMALL = 21
-            ROTATE_RADAR_LEFT_MEDIUM = 22
-            ROTATE_RADAR_LEFT_LARGE = 23
-            ROTATE_RADAR_RIGHT_SMALL = 24
-            ROTATE_RADAR_RIGHT_MEDIUM = 25
-            ROTATE_RADAR_RIGHT_LARGE = 26
-            DO_NOTHING = 27
+        MOVE_FORWARD = 0
+        MOVE_BACKWARD = 1
+        TURN_LEFT = 2
+        TURN_RIGHT = 3
+        TURN_GUN_LEFT = 4
+        TURN_GUN_RIGHT = 5
+        TURN_RADAR_LEFT = 6
+        TURN_RADAR_RIGHT = 7
+        FIRE = 8
+        DO_NOTHING = 9
 
-            def is_fire_action(self) -> bool:
-                return self in [self.FIRE_SMALL, self.FIRE_MEDIUM, self.FIRE_LARGE]
 
-    FIRING_REWARD_SCALE = {
-        ActionType.FIRE_SMALL: 0.1,
-        ActionType.FIRE_MEDIUM: 1,
-        ActionType.FIRE_LARGE: 3,
-    }
+
     def __init__(self, writer):
         self.writer = writer
         self.step_count = 0
 
-        self.action_map = {
-            self.ActionType.MOVE_FORWARD_SMALL: (robot.ActionActionType.MOVE_FORWARD, 25),
-            self.ActionType.MOVE_FORWARD_MEDIUM: (robot.ActionActionType.MOVE_FORWARD, 50),
-            self.ActionType.MOVE_FORWARD_LARGE: (robot.ActionActionType.MOVE_FORWARD, 100),
-            self.ActionType.MOVE_BACKWARD_SMALL: (robot.ActionActionType.MOVE_BACKWARD, 25),
-            self.ActionType.MOVE_BACKWARD_MEDIUM: (robot.ActionActionType.MOVE_BACKWARD, 50),
-            self.ActionType.MOVE_BACKWARD_LARGE: (robot.ActionActionType.MOVE_BACKWARD, 100),
-            self.ActionType.TURN_LEFT_SMALL: (robot.ActionActionType.TURN_LEFT, 5),
-            self.ActionType.TURN_LEFT_MEDIUM: (robot.ActionActionType.TURN_LEFT, 15),
-            self.ActionType.TURN_LEFT_LARGE: (robot.ActionActionType.TURN_LEFT, 45),
-            self.ActionType.TURN_RIGHT_SMALL: (robot.ActionActionType.TURN_RIGHT, 5),
-            self.ActionType.TURN_RIGHT_MEDIUM: (robot.ActionActionType.TURN_RIGHT, 15),
-            self.ActionType.TURN_RIGHT_LARGE: (robot.ActionActionType.TURN_RIGHT, 45),
-            self.ActionType.TURN_GUN_LEFT_SMALL: (robot.ActionActionType.TURN_GUN_LEFT, 5),
-            self.ActionType.TURN_GUN_LEFT_MEDIUM: (robot.ActionActionType.TURN_GUN_LEFT, 15),
-            self.ActionType.TURN_GUN_LEFT_LARGE: (robot.ActionActionType.TURN_GUN_LEFT, 45),
-            self.ActionType.TURN_GUN_RIGHT_SMALL: (robot.ActionActionType.TURN_GUN_RIGHT, 5),
-            self.ActionType.TURN_GUN_RIGHT_MEDIUM: (robot.ActionActionType.TURN_GUN_RIGHT, 15),
-            self.ActionType.TURN_GUN_RIGHT_LARGE: (robot.ActionActionType.TURN_GUN_RIGHT, 45),
-            self.ActionType.FIRE_SMALL: (robot.ActionActionType.FIRE, 0.1),
-            self.ActionType.FIRE_MEDIUM: (robot.ActionActionType.FIRE, 1),
-            self.ActionType.FIRE_LARGE: (robot.ActionActionType.FIRE, 3),
-            self.ActionType.ROTATE_RADAR_LEFT_SMALL: (robot.ActionActionType.ROTATE_RADAR_LEFT, 5),
-            self.ActionType.ROTATE_RADAR_LEFT_MEDIUM: (robot.ActionActionType.ROTATE_RADAR_LEFT, 15),
-            self.ActionType.ROTATE_RADAR_LEFT_LARGE: (robot.ActionActionType.ROTATE_RADAR_LEFT, 45),
-            self.ActionType.ROTATE_RADAR_RIGHT_SMALL: (robot.ActionActionType.ROTATE_RADAR_RIGHT, 5),
-            self.ActionType.ROTATE_RADAR_RIGHT_MEDIUM: (robot.ActionActionType.ROTATE_RADAR_RIGHT, 15),
-            self.ActionType.ROTATE_RADAR_RIGHT_LARGE: (robot.ActionActionType.ROTATE_RADAR_RIGHT, 45),
-            self.ActionType.DO_NOTHING: (robot.ActionActionType.DO_NOTHING, 0),
-        }
+        # self.action_map = {
+        #     self.ActionType.MOVE_FORWARD_SMALL: (robot.ActionActionType.MOVE_FORWARD, 25),
+        #     self.ActionType.MOVE_FORWARD_MEDIUM: (robot.ActionActionType.MOVE_FORWARD, 50),
+        #     self.ActionType.MOVE_FORWARD_LARGE: (robot.ActionActionType.MOVE_FORWARD, 100),
+        #     self.ActionType.MOVE_BACKWARD_SMALL: (robot.ActionActionType.MOVE_BACKWARD, 25),
+        #     self.ActionType.MOVE_BACKWARD_MEDIUM: (robot.ActionActionType.MOVE_BACKWARD, 50),
+        #     self.ActionType.MOVE_BACKWARD_LARGE: (robot.ActionActionType.MOVE_BACKWARD, 100),
+        #     self.ActionType.TURN_LEFT_SMALL: (robot.ActionActionType.TURN_LEFT, 5),
+        #     self.ActionType.TURN_LEFT_MEDIUM: (robot.ActionActionType.TURN_LEFT, 15),
+        #     self.ActionType.TURN_LEFT_LARGE: (robot.ActionActionType.TURN_LEFT, 45),
+        #     self.ActionType.TURN_RIGHT_SMALL: (robot.ActionActionType.TURN_RIGHT, 5),
+        #     self.ActionType.TURN_RIGHT_MEDIUM: (robot.ActionActionType.TURN_RIGHT, 15),
+        #     self.ActionType.TURN_RIGHT_LARGE: (robot.ActionActionType.TURN_RIGHT, 45),
+        #     self.ActionType.TURN_GUN_LEFT_SMALL: (robot.ActionActionType.TURN_GUN_LEFT, 5),
+        #     self.ActionType.TURN_GUN_LEFT_MEDIUM: (robot.ActionActionType.TURN_GUN_LEFT, 15),
+        #     self.ActionType.TURN_GUN_LEFT_LARGE: (robot.ActionActionType.TURN_GUN_LEFT, 45),
+        #     self.ActionType.TURN_GUN_RIGHT_SMALL: (robot.ActionActionType.TURN_GUN_RIGHT, 5),
+        #     self.ActionType.TURN_GUN_RIGHT_MEDIUM: (robot.ActionActionType.TURN_GUN_RIGHT, 15),
+        #     self.ActionType.TURN_GUN_RIGHT_LARGE: (robot.ActionActionType.TURN_GUN_RIGHT, 45),
+        #     self.ActionType.FIRE_SMALL: (robot.ActionActionType.FIRE, 0.1),
+        #     self.ActionType.FIRE_MEDIUM: (robot.ActionActionType.FIRE, 1),
+        #     self.ActionType.FIRE_LARGE: (robot.ActionActionType.FIRE, 3),
+        #     self.ActionType.ROTATE_RADAR_LEFT_SMALL: (robot.ActionActionType.ROTATE_RADAR_LEFT, 5),
+        #     self.ActionType.ROTATE_RADAR_LEFT_MEDIUM: (robot.ActionActionType.ROTATE_RADAR_LEFT, 15),
+        #     self.ActionType.ROTATE_RADAR_LEFT_LARGE: (robot.ActionActionType.ROTATE_RADAR_LEFT, 45),
+        #     self.ActionType.ROTATE_RADAR_RIGHT_SMALL: (robot.ActionActionType.ROTATE_RADAR_RIGHT, 5),
+        #     self.ActionType.ROTATE_RADAR_RIGHT_MEDIUM: (robot.ActionActionType.ROTATE_RADAR_RIGHT, 15),
+        #     self.ActionType.ROTATE_RADAR_RIGHT_LARGE: (robot.ActionActionType.ROTATE_RADAR_RIGHT, 45),
+        #     self.ActionType.DO_NOTHING: (robot.ActionActionType.DO_NOTHING, 0),
+        # }
 
     #keep this method for compatibility
     def reset(self):
